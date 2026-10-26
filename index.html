@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#f6efe2" />
+  <title>你最像哪个历史人物？</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- 开始页 -->
+    <section class="screen is-active" id="start-screen">
+      <div class="start-inner">
+        <div class="start-badge">历史人格图鉴</div>
+        <div class="start-seal">人<br>格</div>
+        <h1 class="start-title">你最像哪个<br>历史人物？</h1>
+        <p class="start-sub">12 道题 · 约 3 分钟 · 测出你灵魂深处的人格底色</p>
+        <button class="btn-primary" id="start-btn">开始测试</button>
+        <p class="start-foot">已有 12,847 人测过</p>
+      </div>
+    </section>
+
+    <!-- 做题页 -->
+    <section class="screen" id="quiz-screen">
+      <header class="quiz-head">
+        <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+        <div class="progress-text"><span id="q-current">1</span> / <span id="q-total">12</span></div>
+      </header>
+      <div class="question-wrap">
+        <h2 class="question-text" id="question-text"></h2>
+        <div class="options" id="options"></div>
+        <div class="quiz-nav">
+          <button class="btn-nav btn-prev" id="prev-btn">上一题</button>
+          <button class="btn-nav btn-next" id="next-btn" disabled>下一题</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 结果页 -->
+    <section class="screen" id="result-screen">
+      <div class="result-inner">
+        <p class="result-kicker">你的历史人格是</p>
+        <div class="result-name-row">
+          <h1 class="result-name" id="result-name"></h1>
+          <span class="result-seal" id="result-seal"></span>
+        </div>
+        <div class="result-title" id="result-title"></div>
+        <div class="result-tagline" id="result-tagline"></div>
+        <ul class="result-traits" id="result-traits"></ul>
+        <div class="result-advice" id="result-advice"></div>
+        <button class="btn-primary" id="save-btn">保存我的结果卡</button>
+        <button class="btn-ghost" id="retake-btn">再测一次</button>
+        <p class="result-tip">长按结果卡可保存图片，分享到小红书</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 分享卡（Canvas 导出 1080×1440） -->
+  <canvas id="share-canvas" width="1080" height="1440" style="display:none"></canvas>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
