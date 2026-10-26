@@ -1,2 +1,5 @@
 # Claude Code 本地配置，不提交
 .claude/
+
+# 发码工具，不上传到公开仓库
+tools/

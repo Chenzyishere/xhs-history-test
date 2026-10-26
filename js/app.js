@@ -12,12 +12,24 @@
   const answers = new Array(TOTAL).fill(-1); // 每题选中的选项下标，-1 表示未选
   let current = 0;
   let result = null;
+  let lastScores = [0, 0, 0, 0];
 
   // DOM
   const $ = (id) => document.getElementById(id);
+  const lockScreen = $("lock-screen");
   const startScreen = $("start-screen");
   const quizScreen = $("quiz-screen");
   const resultScreen = $("result-screen");
+
+  const unlockInput = $("unlock-input");
+  const unlockError = $("unlock-error");
+  const unlockBtn = $("unlock-btn");
+  const lockHint = $("lock-hint");
+  if (DATA.unlock.hint) lockHint.textContent = DATA.unlock.hint;
+
+  const startFoot = $("start-foot");
+  if (DATA.socialProof) startFoot.textContent = DATA.socialProof;
+  else startFoot.style.display = "none";
 
   const progressBar = $("progress-bar");
   const qCurrent = $("q-current");
@@ -31,15 +43,125 @@
 
   // ---------- 屏幕切换 ----------
   function show(id) {
-    [startScreen, quizScreen, resultScreen].forEach((el) => el.classList.remove("is-active"));
+    [lockScreen, startScreen, quizScreen, resultScreen].forEach((el) => el.classList.remove("is-active"));
     $(id).classList.add("is-active");
   }
+
+  // ---------- 验证码 ----------
+  const UNLOCK_KEY = "lswr_unlocked";
+
+  // 归一化：去掉空格和横杠、转大写
+  function normalize(raw) {
+    return String(raw).replace(/[\s\-_]/g, "").toUpperCase();
+  }
+
+  // 校验位：前 N-1 位加盐做散列，取最后一位
+  const ALPHABET = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // 去掉易混淆的 I O
+  function checkDigit(body, salt) {
+    let h = 2166136261;
+    const s = body + "|" + salt;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    return ALPHABET[h % ALPHABET.length];
+  }
+
+  // 验证：主密码 或 前缀+6位主体+1位校验
+  function isValidCode(input) {
+    const cfg = DATA.unlock;
+    const raw = normalize(input);
+    if (!raw) return false;
+
+    // 主密码
+    if (raw === normalize(cfg.masterCode)) return true;
+
+    // 验证码：去掉前缀后应为 7 位（6 位主体 + 1 位校验）
+    const prefix = normalize(cfg.prefix);
+    let body = raw;
+    if (prefix && raw.startsWith(prefix)) body = raw.slice(prefix.length);
+
+    if (body.length !== 7) return false;
+    const base = body.slice(0, 6);
+    const given = body.slice(6);
+    return checkDigit(base, cfg.salt) === given;
+  }
+
+  // ---------- 进度存续（防刷新丢答题） ----------
+  const PROGRESS_KEY = "lswr_progress";
+
+  function saveProgress() {
+    try {
+      sessionStorage.setItem(PROGRESS_KEY, JSON.stringify({ answers, current }));
+    } catch (e) {}
+  }
+
+  function clearProgress() {
+    try { sessionStorage.removeItem(PROGRESS_KEY); } catch (e) {}
+  }
+
+  function restoreProgress() {
+    try {
+      const raw = sessionStorage.getItem(PROGRESS_KEY);
+      if (!raw) return false;
+      const p = JSON.parse(raw);
+      if (!p || !Array.isArray(p.answers) || p.answers.length !== TOTAL) return false;
+      if (typeof p.current !== "number" || p.current < 0 || p.current >= TOTAL) return false;
+      for (let i = 0; i < TOTAL; i++) {
+        const v = p.answers[i];
+        answers[i] = Number.isInteger(v) && v >= 0 && v < DATA.questions[i].options.length ? v : -1;
+      }
+      current = p.current;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // ---------- 解锁 ----------
+  function tryUnlock() {
+    const val = unlockInput.value;
+    if (!normalize(val)) {
+      unlockError.textContent = "请输入验证码";
+      return;
+    }
+    if (isValidCode(val)) {
+      unlockError.textContent = "";
+      unlockInput.value = "";
+      try { localStorage.setItem(UNLOCK_KEY, "1"); } catch (e) {}
+      show("start-screen");
+    } else {
+      unlockError.textContent = "验证码不正确，请检查后重试";
+    }
+  }
+  unlockBtn.addEventListener("click", tryUnlock);
+  unlockInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") tryUnlock();
+  });
+  unlockInput.addEventListener("input", () => {
+    unlockError.textContent = "";
+    // 输入时自动转大写，提升体验
+    const pos = unlockInput.selectionStart;
+    unlockInput.value = unlockInput.value.toUpperCase();
+    unlockInput.setSelectionRange(pos, pos);
+  });
+
+  // 已解锁过则跳过
+  try {
+    if (localStorage.getItem(UNLOCK_KEY) === "1") {
+      if (restoreProgress()) {
+        show("quiz-screen");
+        renderQuestion();
+      } else {
+        show("start-screen");
+      }
+    }
+  } catch (e) {}
 
   // ---------- 开始 ----------
   $("start-btn").addEventListener("click", () => {
     answers.fill(-1);
     current = 0;
     result = null;
+    clearProgress();
     show("quiz-screen");
     renderQuestion();
   });
@@ -71,6 +193,7 @@
     const btns = optionsEl.querySelectorAll(".option");
     btns.forEach((b, i) => b.classList.toggle("is-picked", i === index));
     updateNav();
+    saveProgress();
   }
 
   // 更新导航按钮状态与文案
@@ -83,7 +206,7 @@
 
   // ---------- 上一题 / 下一题 ----------
   prevBtn.addEventListener("click", () => {
-    if (current > 0) { current--; renderQuestion(); }
+    if (current > 0) { current--; renderQuestion(); saveProgress(); }
   });
 
   nextBtn.addEventListener("click", () => {
@@ -91,6 +214,7 @@
     if (current < TOTAL - 1) {
       current++;
       renderQuestion();
+      saveProgress();
     } else {
       finish();
     }
@@ -117,7 +241,9 @@
       DATA.questions[qi].options[ansIdx].effect.forEach((v, d) => { scores[d] += v; });
     });
     progressBar.style.width = "100%";
+    lastScores = scores;
     result = match(scores);
+    clearProgress();
     renderResult();
     show("result-screen");
   }
@@ -141,6 +267,114 @@
 
     // 结果页人物名用人物专属色
     $("result-name").style.color = f.color;
+
+    drawRadar(lastScores, f.color);
+    renderLegend(lastScores);
+  }
+
+  // ---------- 四维雷达 ----------
+  function hexA(hex, alpha) {
+    const h = hex.replace("#", "");
+    const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+    return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + alpha + ")";
+  }
+
+  function drawRadar(scores, color) {
+    const cv = $("radar-canvas");
+    const ctx = cv.getContext("2d");
+    const W = cv.width, H = cv.height;
+    const cx = W / 2, cy = H / 2;
+    const R = 200;
+    const dims = DATA.dimensions;
+    const N = dims.length;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // -3..3 归一化到 0..1，0 分落在 0.5（虚线中性环）
+    const vals = scores.map((s) => 0.5 + Math.max(-1, Math.min(1, s / 3)) * 0.5);
+    const angles = dims.map((_, i) => -Math.PI / 2 + (i * 2 * Math.PI) / N);
+
+    const pt = (a, ratio) => [cx + Math.cos(a) * R * ratio, cy + Math.sin(a) * R * ratio];
+
+    // 网格环
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(43, 38, 32, 0.10)";
+    for (let ring = 1; ring <= 4; ring++) {
+      ctx.beginPath();
+      angles.forEach((a, i) => {
+        const p = pt(a, ring / 4);
+        i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]);
+      });
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    // 中性参考环（0 分）
+    ctx.beginPath();
+    angles.forEach((a, i) => {
+      const p = pt(a, 0.5);
+      i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]);
+    });
+    ctx.closePath();
+    ctx.setLineDash([7, 7]);
+    ctx.strokeStyle = "rgba(192, 57, 43, 0.35)";
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 轴线
+    ctx.strokeStyle = "rgba(43, 38, 32, 0.12)";
+    angles.forEach((a) => {
+      const p = pt(a, 1);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(p[0], p[1]);
+      ctx.stroke();
+    });
+
+    // 数据多边形
+    ctx.beginPath();
+    angles.forEach((a, i) => {
+      const p = pt(a, vals[i]);
+      i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]);
+    });
+    ctx.closePath();
+    ctx.fillStyle = hexA(color, 0.22);
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3.5;
+    ctx.stroke();
+
+    // 顶点
+    angles.forEach((a, i) => {
+      const p = pt(a, vals[i]);
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], 7, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    });
+
+    // 轴端标签（正向极），按方位调整对齐避免出界
+    ctx.textBaseline = "middle";
+    angles.forEach((a, i) => {
+      const p = pt(a, 1.16);
+      const cos = Math.cos(a);
+      ctx.textAlign = Math.abs(cos) < 0.1 ? "center" : (cos > 0 ? "left" : "right");
+      ctx.fillStyle = "#2b2620";
+      ctx.font = 'bold 30px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+      ctx.fillText(dims[i].pos, p[0], p[1]);
+    });
+  }
+
+  // 雷达下方文字标签：显示偏哪一极
+  function renderLegend(scores) {
+    const el = $("radar-legend");
+    el.innerHTML = "";
+    scores.forEach((s, i) => {
+      const d = DATA.dimensions[i];
+      const span = document.createElement("span");
+      span.textContent = "偏" + (s >= 0 ? d.pos : d.neg);
+      el.appendChild(span);
+    });
   }
 
   // ---------- 分享卡绘制 ----------
@@ -244,10 +478,12 @@
       ctx.fillText(line, W / 2, ay + i * 52);
     });
 
-    // 底部品牌
+    // 底部引流
     ctx.fillStyle = "#8a7f72";
     ctx.font = '28px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
-    ctx.fillText("测一测，你是哪位历史人物", W / 2, 1402);
+    ctx.fillText("小红书搜索「" + DATA.brand + "」", W / 2, 1372);
+    ctx.font = '24px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.fillText("测一测你是哪位历史人物", W / 2, 1410);
   }
 
   // 圆角矩形路径
@@ -278,17 +514,91 @@
     return lines;
   }
 
+  // ---------- 轻提示 ----------
+  let toastTimer = null;
+  function toast(msg) {
+    const el = $("toast");
+    el.textContent = msg;
+    el.classList.add("is-show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("is-show"), 1800);
+  }
+
+  // ---------- 复制晒单文案 ----------
+  function buildCaption(f) {
+    const tpl = (DATA.share && DATA.share.template) || "{name} {title}";
+    return tpl
+      .replace(/\{name\}/g, f.name)
+      .replace(/\{title\}/g, f.title)
+      .replace(/\{tagline\}/g, f.tagline)
+      .replace(/\{advice\}/g, f.advice)
+      .replace(/\{brand\}/g, DATA.brand);
+  }
+
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (e) {}
+    // 降级：临时 textarea + execCommand
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "-1000px";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  $("copy-btn").addEventListener("click", async () => {
+    if (!result) return;
+    const ok = await copyText(buildCaption(result));
+    toast(ok ? "文案已复制，去小红书粘贴吧" : "复制失败，请长按手动复制");
+  });
+
   // ---------- 保存分享卡 ----------
+  const saveOverlay = $("save-overlay");
+  const saveImg = $("save-img");
+
+  function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
   $("save-btn").addEventListener("click", () => {
     if (!result) return;
     drawShareCard(result);
     const url = canvas.toDataURL("image/png");
+
+    // iOS Safari 不支持 a[download]，改为长按保存
+    if (isIOS()) {
+      saveImg.src = url;
+      saveOverlay.classList.add("is-open");
+      return;
+    }
+
     const a = document.createElement("a");
     a.href = url;
     a.download = "我是" + result.name + ".png";
     document.body.appendChild(a);
     a.click();
     a.remove();
+  });
+
+  $("save-close").addEventListener("click", () => {
+    saveOverlay.classList.remove("is-open");
+  });
+  saveOverlay.addEventListener("click", (e) => {
+    if (e.target === saveOverlay) saveOverlay.classList.remove("is-open");
   });
 
   // ---------- 再测一次 ----------

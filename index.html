@@ -5,35 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#f6efe2" />
   <title>你最像哪个历史人物？</title>
+
+  <meta name="description" content="12 道题，测出你灵魂深处最像的历史人物。" />
+  <meta property="og:title" content="你最像哪个历史人物？" />
+  <meta property="og:description" content="12 道题，测出你灵魂深处最像的历史人物。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://chenzyishere.github.io/xhs-history-test/" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c0392b'/><text x='50' y='58' font-size='60' fill='%23fff' text-anchor='middle' font-family='serif'>测</text></svg>" />
+
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div id="app">
 
+    <!-- 解锁页 -->
+    <section class="screen is-active" id="lock-screen">
+      <div class="lock-inner">
+        <div class="start-seal">人<br>格</div>
+        <h1 class="lock-title">输入验证码<br>解锁测试</h1>
+        <p class="lock-sub" id="lock-hint">购买后获取验证码，输入即可开始</p>
+        <input class="lock-input" id="unlock-input" type="text" inputmode="text" placeholder="请输入验证码" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+        <div class="lock-error" id="unlock-error"></div>
+        <button class="btn-primary" id="unlock-btn">解锁</button>
+        <p class="lock-note">验证码不区分大小写，注意不要有多余空格</p>
+      </div>
+    </section>
+
     <!-- 开始页 -->
-    <section class="screen is-active" id="start-screen">
+    <section class="screen" id="start-screen">
       <div class="start-inner">
         <div class="start-badge">历史人格图鉴</div>
         <div class="start-seal">人<br>格</div>
         <h1 class="start-title">你最像哪个<br>历史人物？</h1>
         <p class="start-sub">12 道题 · 约 3 分钟 · 测出你灵魂深处的人格底色</p>
         <button class="btn-primary" id="start-btn">开始测试</button>
-        <p class="start-foot">已有 12,847 人测过</p>
+        <p class="start-foot" id="start-foot">已有 12,847 人测过</p>
       </div>
     </section>
 
     <!-- 做题页 -->
     <section class="screen" id="quiz-screen">
-      <header class="quiz-head">
-        <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
-        <div class="progress-text"><span id="q-current">1</span> / <span id="q-total">12</span></div>
-      </header>
-      <div class="question-wrap">
-        <h2 class="question-text" id="question-text"></h2>
-        <div class="options" id="options"></div>
-        <div class="quiz-nav">
-          <button class="btn-nav btn-prev" id="prev-btn">上一题</button>
-          <button class="btn-nav btn-next" id="next-btn" disabled>下一题</button>
+      <div class="quiz-inner">
+        <header class="quiz-head">
+          <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+          <div class="progress-text"><span id="q-current">1</span> / <span id="q-total">12</span></div>
+        </header>
+        <div class="question-wrap">
+          <h2 class="question-text" id="question-text"></h2>
+          <div class="options" id="options"></div>
+          <div class="quiz-nav">
+            <button class="btn-nav btn-prev" id="prev-btn">上一题</button>
+            <button class="btn-nav btn-next" id="next-btn" disabled>下一题</button>
+          </div>
         </div>
       </div>
     </section>
@@ -48,14 +72,35 @@
         </div>
         <div class="result-title" id="result-title"></div>
         <div class="result-tagline" id="result-tagline"></div>
+
+        <div class="radar-wrap">
+          <canvas id="radar-canvas" width="600" height="600"></canvas>
+          <div class="radar-legend" id="radar-legend"></div>
+        </div>
+
         <ul class="result-traits" id="result-traits"></ul>
         <div class="result-advice" id="result-advice"></div>
-        <button class="btn-primary" id="save-btn">保存我的结果卡</button>
+        <div class="result-actions">
+          <button class="btn-primary" id="save-btn">保存结果卡</button>
+          <button class="btn-secondary" id="copy-btn">复制晒单文案</button>
+        </div>
         <button class="btn-ghost" id="retake-btn">再测一次</button>
-        <p class="result-tip">长按结果卡可保存图片，分享到小红书</p>
+        <p class="result-tip">生成结果卡后可保存，分享到小红书</p>
       </div>
     </section>
 
+  </div>
+
+  <!-- 轻提示 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 结果卡预览（iOS 无法直接下载，长按保存） -->
+  <div class="save-overlay" id="save-overlay">
+    <div class="save-panel">
+      <p class="save-hint">长按图片保存到相册</p>
+      <img class="save-img" id="save-img" alt="我的历史人格结果卡" />
+      <button class="btn-ghost save-close" id="save-close">关闭</button>
+    </div>
   </div>
 
   <!-- 分享卡（Canvas 导出 1080×1440） -->

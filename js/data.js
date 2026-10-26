@@ -16,6 +16,31 @@ window.QUIZ_DATA = {
   subtitle: "12 道题，测出你灵魂深处的人格底色",
   brand: "历史人格图鉴",
   duration: "约 3 分钟",
+  socialProof: "已有 12,847 人测过",
+
+  // 四维显示名（雷达图用）
+  dimensions: [
+    { pos: "入世", neg: "出世" },
+    { pos: "刚", neg: "柔" },
+    { pos: "燃", neg: "佛" },
+    { pos: "破格", neg: "守序" }
+  ],
+
+  // 晒单文案模板：{name} {title} {tagline} {advice} {brand} 会被替换
+  share: {
+    template: "我测出来是{name}😆 {title}\n\n「{tagline}」\n\n12 道题测出你灵魂深处最像哪位历史人物，你也来试试？\n\n#历史人物 #性格测试 #趣味测试"
+  },
+
+  // ---------- 解锁配置 ----------
+  unlock: {
+    // 主密码：永久可用，留给你自己测试
+    masterCode: "9900",
+    // 校验盐值：改这个会让所有已发出的验证码失效
+    salt: "LSRW-2026-xhs-history",
+    // 验证码前缀，仅用于展示好看，不参与校验
+    prefix: "LSRW",
+    hint: "购买后获取验证码，输入即可开始",
+  },
 
   figures: [
     {

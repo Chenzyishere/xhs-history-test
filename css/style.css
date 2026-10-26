@@ -18,6 +18,11 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+button, .option, .btn-nav, .btn-primary, .btn-ghost {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 html, body {
   height: 100%;
 }
@@ -37,7 +42,9 @@ body {
 #app {
   width: 100%;
   max-width: 430px;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh; /* 移动端浏览器工具栏不会裁掉底部 */
+  min-height: 480px;
   position: relative;
   overflow: hidden;
   background:
@@ -50,26 +57,33 @@ body {
 .screen {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(12px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition: opacity 0.3s ease;
 }
 .screen.is-active {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
+}
+
+/* 三块内层容器统一：撑满可滚动区 */
+.start-inner,
+.lock-inner,
+.result-inner,
+.quiz-inner {
+  min-height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* =========================================================
  * 开始页
  * ========================================================= */
 .start-inner {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -142,6 +156,60 @@ body {
   font-size: 12px;
   color: var(--ink-soft);
   letter-spacing: 1px;
+}
+
+/* =========================================================
+ * 解锁页
+ * ========================================================= */
+.lock-inner {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 32px;
+}
+.lock-title {
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.lock-sub {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-bottom: 30px;
+}
+.lock-input {
+  width: 100%;
+  max-width: 300px;
+  font-family: var(--sans);
+  font-size: 20px;
+  letter-spacing: 4px;
+  text-align: center;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 15px 16px;
+  outline: none;
+  transition: border-color 0.15s ease;
+  margin-bottom: 8px;
+}
+.lock-input:focus {
+  border-color: var(--red);
+}
+.lock-error {
+  min-height: 20px;
+  font-size: 13px;
+  color: var(--red);
+  margin-bottom: 14px;
+}
+.lock-note {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.5px;
 }
 
 /* =========================================================
@@ -256,9 +324,6 @@ body {
  * 结果页
  * ========================================================= */
 .result-inner {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
   text-align: center;
   padding: 48px 28px 40px;
@@ -378,6 +443,147 @@ body {
   font-size: 12px;
   color: var(--ink-soft);
   letter-spacing: 1px;
+}
+
+/* =========================================================
+ * 四维雷达
+ * ========================================================= */
+.radar-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+#radar-canvas {
+  width: 280px;
+  height: 280px;
+  max-width: 78vw;
+  max-height: 78vw;
+}
+.radar-caption {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 1px;
+}
+.radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 6px;
+  padding: 0 8px;
+}
+.radar-legend span {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 11px;
+}
+
+/* =========================================================
+ * 结果页操作区
+ * ========================================================= */
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+.result-actions .btn-primary {
+  width: 100%;
+  padding: 16px 0;
+}
+.btn-secondary {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--red-deep);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1.5px solid rgba(192, 57, 43, 0.35);
+  border-radius: 999px;
+  padding: 15px 0;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.btn-secondary:active { transform: scale(0.96); }
+
+/* =========================================================
+ * 轻提示
+ * ========================================================= */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 88px;
+  z-index: 200;
+  transform: translate(-50%, 12px);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: #f6efe2;
+  background: rgba(43, 38, 32, 0.92);
+  padding: 11px 22px;
+  border-radius: 999px;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* =========================================================
+ * 结果卡预览层（iOS 长按保存）
+ * ========================================================= */
+.save-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(20, 16, 12, 0.88);
+}
+.save-overlay.is-open { display: flex; }
+
+.save-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 100%;
+}
+.save-hint {
+  color: #f6efe2;
+  font-size: 14px;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+.save-img {
+  max-width: 100%;
+  max-height: calc(100vh - 170px);
+  max-height: calc(100dvh - 170px);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  -webkit-touch-callout: default;
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+.save-close { color: #d8cfc0; margin-top: 16px; }
+
+/* ---------- iPhone 底部安全区 ---------- */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .start-inner,
+  .lock-inner { padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
+  .question-wrap { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+  .result-inner { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
 }
 
 /* ---------- 响应式小屏微调 ---------- */
