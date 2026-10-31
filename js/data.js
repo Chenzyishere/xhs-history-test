@@ -14,7 +14,7 @@
 window.QUIZ_DATA = {
   title: "你最像哪个历史人物？",
   subtitle: "12 道题，测出你灵魂深处的人格底色",
-  brand: "历史人格图鉴",
+  brand: "虾说说",
   duration: "约 3 分钟",
   socialProof: "已有 12,847 人测过",
 
