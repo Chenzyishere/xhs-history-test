@@ -7,6 +7,7 @@
 
   const DATA = window.QUIZ_DATA;
   const TOTAL = DATA.questions.length;
+  const PER_DIM = TOTAL / DATA.dimensions.length; // 每维题目数（计分归一化分母）
 
   // 当前状态
   const answers = new Array(TOTAL).fill(-1); // 每题选中的选项下标，-1 表示未选
@@ -223,7 +224,7 @@
   // ---------- 结果匹配 ----------
   function match(scores) {
     // 归一化到 -1 ~ 1
-    const u = scores.map((s) => s / 3);
+    const u = scores.map((s) => s / PER_DIM);
     let best = null;
     let bestDist = Infinity;
     DATA.figures.forEach((f) => {
@@ -291,7 +292,7 @@
     ctx.clearRect(0, 0, W, H);
 
     // -3..3 归一化到 0..1，0 分落在 0.5（虚线中性环）
-    const vals = scores.map((s) => 0.5 + Math.max(-1, Math.min(1, s / 3)) * 0.5);
+    const vals = scores.map((s) => 0.5 + Math.max(-1, Math.min(1, s / PER_DIM)) * 0.5);
     const angles = dims.map((_, i) => -Math.PI / 2 + (i * 2 * Math.PI) / N);
 
     const pt = (a, ratio) => [cx + Math.cos(a) * R * ratio, cy + Math.sin(a) * R * ratio];
