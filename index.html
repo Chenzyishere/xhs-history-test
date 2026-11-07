@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#f6efe2" />
   <title>你最像哪个历史人物？</title>
 
-  <meta name="description" content="24 道题，测出你灵魂深处最像的历史人物。" />
+  <meta name="description" content="16 道题，测出你灵魂深处最像的历史人物。本测试仅供娱乐。" />
   <meta property="og:title" content="你最像哪个历史人物？" />
-  <meta property="og:description" content="24 道题，测出你灵魂深处最像的历史人物。" />
+  <meta property="og:description" content="16 道题，测出你灵魂深处最像的历史人物。本测试仅供娱乐。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://chenzyishere.github.io/xhs-history-test/" />
   <meta name="twitter:card" content="summary" />
@@ -23,24 +23,26 @@
     <section class="screen is-active" id="lock-screen">
       <div class="lock-inner">
         <div class="start-seal">人<br>格</div>
-        <h1 class="lock-title">输入验证码<br>解锁测试</h1>
-        <p class="lock-sub" id="lock-hint">购买后获取验证码，输入即可开始</p>
+        <h1 class="lock-title" id="lock-title">输入验证码<br>解锁测试</h1>
+        <p class="lock-sub" id="lock-hint">下单后自动发货，把订单消息里的验证码填到这里</p>
         <input class="lock-input" id="unlock-input" type="text" inputmode="text" placeholder="请输入验证码" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" />
         <div class="lock-error" id="unlock-error"></div>
         <button class="btn-primary" id="unlock-btn">解锁</button>
         <p class="lock-note">验证码不区分大小写，注意不要有多余空格</p>
+        <p class="disclaimer">本测试仅供娱乐，结果不构成性格鉴定</p>
       </div>
     </section>
 
     <!-- 开始页 -->
     <section class="screen" id="start-screen">
       <div class="start-inner">
-        <div class="start-badge">虾说说</div>
+        <div class="start-badge" id="start-badge">虾说说</div>
         <div class="start-seal">人<br>格</div>
-        <h1 class="start-title">你最像哪个<br>历史人物？</h1>
-        <p class="start-sub">24 道题 · 约 5 分钟 · 测出你灵魂深处的人格底色</p>
+        <h1 class="start-title" id="start-title">你最像哪个<br>历史人物？</h1>
+        <p class="start-sub" id="start-sub">16 道题 · 约 3 分钟 · 测出你灵魂深处的人格底色</p>
         <button class="btn-primary" id="start-btn">开始测试</button>
         <p class="start-foot" id="start-foot">已有 12,847 人测过</p>
+        <p class="disclaimer">本测试仅供娱乐，结果不构成性格鉴定</p>
       </div>
     </section>
 
@@ -49,7 +51,7 @@
       <div class="quiz-inner">
         <header class="quiz-head">
           <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
-          <div class="progress-text"><span id="q-current">1</span> / <span id="q-total">12</span></div>
+          <div class="progress-text"><span id="q-current">1</span> / <span id="q-total">16</span></div>
         </header>
         <div class="question-wrap">
           <h2 class="question-text" id="question-text"></h2>
@@ -70,6 +72,7 @@
           <h1 class="result-name" id="result-name"></h1>
           <span class="result-seal" id="result-seal"></span>
         </div>
+        <div class="result-persona" id="result-persona"></div>
         <div class="result-title" id="result-title"></div>
         <div class="result-tagline" id="result-tagline"></div>
 
@@ -85,7 +88,9 @@
           <button class="btn-secondary" id="copy-btn">复制晒单文案</button>
         </div>
         <button class="btn-ghost" id="retake-btn">再测一次</button>
+        <p class="result-search" id="result-search">小红书搜索「虾说说」</p>
         <p class="result-tip">生成结果卡后可保存，分享到小红书</p>
+        <p class="disclaimer">本测试仅供娱乐，结果不构成性格鉴定</p>
       </div>
     </section>
 

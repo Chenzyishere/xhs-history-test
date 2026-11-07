@@ -1,24 +1,30 @@
 /* =========================================================
  * 你最像哪个历史人物？ —— 题库与人物数据
- * 16 个人物 · 24 道题 · 四维人格模型
+ * 16 个人物 · 16 道题 · 四维人格模型
  *
- * 四维（得分范围 -3 ~ +3）：
+ * 四维（得分范围 -4 ~ +4）：
  *   D1 入世(+) / 出世(-)    要不要在世间做出一番事
  *   D2 刚(+) / 柔(-)        遇事硬碰硬还是圆融化解
  *   D3 燃(+) / 佛(-)        被大义责任驱动还是忠于自我
  *   D4 破格(+) / 守序(-)    打破规则还是遵守规则
  *
- * 人物向量为 -1 ~ +1 的实数，用户得分除以 3 归一化后取欧氏距离最近者。
+ * 人物向量为 -1 ~ +1 的实数，用户得分除以 4 归一化后取欧氏距离最近者。
  * ========================================================= */
 
 window.QUIZ_DATA = {
   title: "你最像哪个历史人物？",
-  subtitle: "24 道题，测出你灵魂深处的人格底色",
+  titleHtml: "你最像哪个<br>历史人物？",
+  subtitle: "测出你灵魂深处的人格底色",
   brand: "虾说说",
-  duration: "约 5 分钟",
+  duration: "约 3 分钟",
   socialProof: "已有 12,847 人测过",
+  startBtn: "开始测试",
+  lockTitleHtml: "输入验证码<br>解锁测试",
+  cardKicker: "你 灵 魂 深 处 的 人 格",
+  cardFooter: "测一测你是哪种人格",
+  disclaimer: "本测试仅供娱乐，结果不构成性格鉴定",
+  statsKey: "lswr_stats",
 
-  // 四维显示名（雷达图用）
   dimensions: [
     { pos: "入世", neg: "出世" },
     { pos: "刚", neg: "柔" },
@@ -26,26 +32,24 @@ window.QUIZ_DATA = {
     { pos: "破格", neg: "守序" }
   ],
 
-  // 晒单文案模板：{name} {title} {tagline} {advice} {brand} 会被替换
   share: {
-    template: "我测出来是{name}😆 {title}\n\n「{tagline}」\n\n24 道题测出你灵魂深处最像哪位历史人物，你也来试试？\n\n#历史人物 #性格测试 #趣味测试"
+    template: "我测出来是{persona}（{name}）😆 {title}\n\n「{tagline}」\n\n16 道题测出你的人格底色，你也来试试？\n\n#内耗 #性格测试 #人格图鉴"
   },
 
-  // ---------- 解锁配置 ----------
   unlock: {
-    // 主密码：永久可用，留给你自己测试
-    masterCode: "9900",
-    // 校验盐值：改这个会让所有已发出的验证码失效
-    salt: "LSRW-2026-xhs-history",
-    // 验证码前缀，仅用于展示好看，不参与校验
+    masterCode: "9900",                 // 自己测试，不要写进自动发货
+    shopCode: "SHUO16",                 // 小红书自动发货用的店铺密码
+    salt: "LSRW-2026-xhs-history",      // 卡密库校验盐，改了旧卡密全废
     prefix: "LSRW",
-    hint: "购买后获取验证码，输入即可开始",
+    pageUrl: "https://chenzyishere.github.io/xhs-history-test/",
+    hint: "下单后自动发货，把订单消息里的验证码填到这里",
   },
 
   figures: [
     {
       id: "sushi",
       name: "苏轼",
+      persona: "反内耗型",
       title: "反内耗大师",
       tagline: "被贬到哪，就在哪吃好喝好",
       seal: "松弛",
@@ -61,6 +65,7 @@ window.QUIZ_DATA = {
     {
       id: "libai",
       name: "李白",
+      persona: "勇往直前型",
       title: "大唐朋克",
       tagline: "天生我材必有用，千金散尽还复来",
       seal: "狂放",
@@ -76,6 +81,7 @@ window.QUIZ_DATA = {
     {
       id: "zengguofan",
       name: "曾国藩",
+      persona: "靠谱务实型",
       title: "笨人的逆袭",
       tagline: "结硬寨，打呆仗",
       seal: "自律",
@@ -91,6 +97,7 @@ window.QUIZ_DATA = {
     {
       id: "jiajing",
       name: "嘉靖",
+      persona: "边界感型",
       title: "反 PUA 第一人",
       tagline: "有些班，不上比上更重要",
       seal: "通透",
@@ -106,6 +113,7 @@ window.QUIZ_DATA = {
     {
       id: "wuzetian",
       name: "武则天",
+      persona: "大女主型",
       title: "规则改写者",
       tagline: "这天下，为什么不能是她的",
       seal: "野心",
@@ -121,6 +129,7 @@ window.QUIZ_DATA = {
     {
       id: "wanganshi",
       name: "王安石",
+      persona: "理想主义型",
       title: "理想主义打工人",
       tagline: "天变不足畏，祖宗不足法",
       seal: "理想",
@@ -136,6 +145,7 @@ window.QUIZ_DATA = {
     {
       id: "caocao",
       name: "曹操",
+      persona: "目标导向型",
       title: "实用主义天花板",
       tagline: "宁教我负天下人，休教天下人负我",
       seal: "清醒",
@@ -151,6 +161,7 @@ window.QUIZ_DATA = {
     {
       id: "zhugeliang",
       name: "诸葛亮",
+      persona: "担当型",
       title: "靠谱的极限",
       tagline: "三顾之恩，一生相报",
       seal: "靠谱",
@@ -166,6 +177,7 @@ window.QUIZ_DATA = {
     {
       id: "taoyuanming",
       name: "陶渊明",
+      persona: "低欲望型",
       title: "裸辞鼻祖",
       tagline: "不为五斗米折腰",
       seal: "躺平",
@@ -181,6 +193,7 @@ window.QUIZ_DATA = {
     {
       id: "tangbohu",
       name: "唐伯虎",
+      persona: "自由逍遥型",
       title: "人间逍遥客",
       tagline: "别人笑我太疯癫，我笑他人看不穿",
       seal: "逍遥",
@@ -196,6 +209,7 @@ window.QUIZ_DATA = {
     {
       id: "yuefei",
       name: "岳飞",
+      persona: "忠义型",
       title: "忠义的悲情英雄",
       tagline: "三十功名尘与土，八千里路云和月",
       seal: "忠义",
@@ -211,6 +225,7 @@ window.QUIZ_DATA = {
     {
       id: "liyu",
       name: "李煜",
+      persona: "敏感艺术型",
       title: "词中帝王",
       tagline: "问君能有几多愁",
       seal: "敏感",
@@ -226,6 +241,7 @@ window.QUIZ_DATA = {
     {
       id: "fanzhongyan",
       name: "范仲淹",
+      persona: "担当型",
       title: "先忧后乐的担当",
       tagline: "先天下之忧而忧",
       seal: "担当",
@@ -241,6 +257,7 @@ window.QUIZ_DATA = {
     {
       id: "xiangyu",
       name: "项羽",
+      persona: "真性情型",
       title: "真性情的霸王",
       tagline: "力拔山兮气盖世",
       seal: "霸气",
@@ -256,6 +273,7 @@ window.QUIZ_DATA = {
     {
       id: "zhangliang",
       name: "张良",
+      persona: "知止智慧型",
       title: "功成身退的智者",
       tagline: "谋定而后动，功成拂衣去",
       seal: "知止",
@@ -271,6 +289,7 @@ window.QUIZ_DATA = {
     {
       id: "wangyangming",
       name: "王阳明",
+      persona: "破内耗型",
       title: "破内耗宗师",
       tagline: "心外无物，知行合一",
       seal: "知行",
@@ -291,8 +310,8 @@ window.QUIZ_DATA = {
       text: "周一早上醒来，你脑子里的第一个念头是？",
       options: [
         { text: "这周有什么硬仗要打", effect: [1, 0, 0, 0] },
-        { text: "这班是非上不可吗", effect: [-1, 0, 0, 0] },
         { text: "先把今天的会应付过去", effect: [0, 0, 0, 0] },
+        { text: "这班是非上不可吗", effect: [-1, 0, 0, 0] },
         { text: "下个假期是什么时候", effect: [-1, 0, 0, 0] }
       ]
     },
@@ -303,7 +322,7 @@ window.QUIZ_DATA = {
         { text: "想办法绕开它", effect: [0, 0, 0, 1] },
         { text: "遵守，但心里疯狂吐槽", effect: [0, 0, 0, 0] },
         { text: "走流程，正式提意见", effect: [0, 0, 0, -1] },
-        { text: "直接挑战它", effect: [0, 0, 0, 1] }
+        { text: "算了，按规定来最省事", effect: [0, 0, 0, -1] }
       ]
     },
     {
@@ -311,19 +330,19 @@ window.QUIZ_DATA = {
       text: "同事在会上抢了你的功劳，你会？",
       options: [
         { text: "当场点破，寸步不让", effect: [0, 1, 0, 0] },
-        { text: "私下委婉拿回来", effect: [0, -1, 0, 0] },
-        { text: "记下来，以后再算", effect: [0, 1, 0, 0] },
-        { text: "算了，不值当", effect: [0, 0, 0, 0] }
+        { text: "私下委婉拿回来", effect: [0, 0, 0, 0] },
+        { text: "算了，不值当", effect: [0, -1, 0, 0] },
+        { text: "先忍着，回头再想办法", effect: [0, -1, 0, 0] }
       ]
     },
     {
       id: "q4",
-      text: "你做事最根本的动力是什么？",
+      text: "看到不公平的事，你会？",
       options: [
-        { text: "想改变点什么，哪怕一点点", effect: [0, 0, 1, 0] },
-        { text: "我想过成我喜欢的样子", effect: [0, 0, -1, 0] },
-        { text: "责任所在，不能掉链子", effect: [0, 0, 1, 0] },
-        { text: "别太累，差不多就行", effect: [0, 0, -1, 0] }
+        { text: "拍案而起，这得管", effect: [0, 0, 1, 0] },
+        { text: "默默记下，等有能力再改变", effect: [0, 0, 0, 0] },
+        { text: "心里不平，但想想算了", effect: [0, 0, -1, 0] },
+        { text: "与我无关", effect: [0, 0, -1, 0] }
       ]
     },
     {
@@ -331,199 +350,119 @@ window.QUIZ_DATA = {
       text: "你希望五年后别人怎么评价你？",
       options: [
         { text: "这个领域没他不行", effect: [1, 0, 0, 0] },
+        { text: "他是个靠谱的人", effect: [0, 0, 0, 0] },
         { text: "他活得真通透", effect: [-1, 0, 0, 0] },
-        { text: "他是个靠谱的人", effect: [1, 0, 0, 0] },
         { text: "他过得很快乐", effect: [-1, 0, 0, 0] }
       ]
     },
     {
       id: "q6",
-      text: "看到不公平的事，你会？",
+      text: "有人对你说话很难听，你会？",
       options: [
-        { text: "拍案而起，这得管", effect: [0, 0, 1, 0] },
-        { text: "心里不平，但想想算了", effect: [0, 0, -1, 0] },
-        { text: "与我无关", effect: [0, 0, 0, 0] },
-        { text: "默默记下，等有能力再改变", effect: [0, 0, 1, 0] }
+        { text: "怼回去，谁怕谁", effect: [0, 1, 0, 0] },
+        { text: "表面没事，心里拉黑", effect: [0, 0, 0, 0] },
+        { text: "冷静回应，不接情绪", effect: [0, -1, 0, 0] },
+        { text: "反思自己是不是哪里错了", effect: [0, -1, 0, 0] }
       ]
     },
     {
       id: "q7",
-      text: "有人对你说话很难听，你会？",
+      text: "如果突然有一个亿，你会？",
       options: [
-        { text: "怼回去，谁怕谁", effect: [0, 1, 0, 0] },
-        { text: "冷静回应，不接情绪", effect: [0, -1, 0, 0] },
-        { text: "表面没事，心里拉黑", effect: [0, 0, 0, 0] },
-        { text: "反思自己是不是哪里错了", effect: [0, -1, 0, 0] }
+        { text: "做点有意义的事，帮到一些人", effect: [0, 0, 1, 0] },
+        { text: "存起来，安稳过完这辈子", effect: [0, 0, 0, 0] },
+        { text: "环游世界，享受人生", effect: [0, 0, -1, 0] },
+        { text: "先躺平一段时间再说", effect: [0, 0, -1, 0] }
       ]
     },
     {
       id: "q8",
       text: "下面哪句话你更认同？",
       options: [
-        { text: "规矩就是规矩，得守", effect: [0, 0, 0, -1] },
         { text: "规则是用来打破的", effect: [0, 0, 0, 1] },
         { text: "聪明人在规则里跳舞", effect: [0, 0, 0, 0] },
+        { text: "规矩就是规矩，得守", effect: [0, 0, 0, -1] },
         { text: "别惹事，安稳最重要", effect: [0, 0, 0, -1] }
       ]
     },
     {
       id: "q9",
-      text: "看到一个风口机会，你的第一反应是？",
+      text: "你对「出人头地」的态度是？",
       options: [
-        { text: "先冲进去占个坑", effect: [1, 0, 0, 0] },
-        { text: "看看再说，不一定适合我", effect: [-1, 0, 0, 0] },
-        { text: "研究透了再上", effect: [1, 0, 0, 0] },
-        { text: "关我什么事", effect: [-1, 0, 0, 0] }
+        { text: "一定要混出个名堂", effect: [1, 0, 0, 0] },
+        { text: "有本事自然会被看见", effect: [0, 0, 0, 0] },
+        { text: "平平淡淡也挺好", effect: [-1, 0, 0, 0] },
+        { text: "看缘分，不刻意", effect: [-1, 0, 0, 0] }
       ]
     },
     {
       id: "q10",
-      text: "如果突然有一个亿，你会？",
+      text: "遇到一个坎过不去，你会？",
       options: [
-        { text: "做点有意义的事，帮到一些人", effect: [0, 0, 1, 0] },
-        { text: "环游世界，享受人生", effect: [0, 0, -1, 0] },
-        { text: "存起来，安稳过完这辈子", effect: [0, 0, 0, 0] },
-        { text: "继续做我现在想做的事", effect: [0, 0, 1, 0] }
+        { text: "死磕到底，不信邪", effect: [0, 1, 0, 0] },
+        { text: "先放着，缓一缓再来", effect: [0, 0, 0, 0] },
+        { text: "绕过去，条条大路通罗马", effect: [0, -1, 0, 0] },
+        { text: "换个方向，何必为难自己", effect: [0, -1, 0, 0] }
       ]
     },
     {
       id: "q11",
-      text: "遇到一个坎过不去，你会？",
+      text: "团队需要你牺牲个人时间，你会？",
       options: [
-        { text: "死磕到底，不信邪", effect: [0, 1, 0, 0] },
-        { text: "绕过去，条条大路通罗马", effect: [0, -1, 0, 0] },
-        { text: "先放着，缓一缓再来", effect: [0, 0, 0, 0] },
-        { text: "换个方向，何必为难自己", effect: [0, -1, 0, 0] }
+        { text: "义不容辞，集体优先", effect: [0, 0, 1, 0] },
+        { text: "看情况，不想被道德绑架", effect: [0, 0, 0, 0] },
+        { text: "先顾好自己再说", effect: [0, 0, -1, 0] },
+        { text: "能推就推，别给自己加戏", effect: [0, 0, -1, 0] }
       ]
     },
     {
       id: "q12",
       text: "如果人生能重来一次，你会？",
       options: [
-        { text: "还是按部就班走最稳", effect: [0, 0, 0, -1] },
         { text: "换个活法，折腾点", effect: [0, 0, 0, 1] },
-        { text: "早点做自己真正想做的事", effect: [0, 0, 0, 1] },
-        { text: "多听别人的，少走弯路", effect: [0, 0, 0, 0] }
+        { text: "早点做自己真正想做的事", effect: [0, 0, 0, 0] },
+        { text: "还是按部就班走最稳", effect: [0, 0, 0, -1] },
+        { text: "多听别人的，少走弯路", effect: [0, 0, 0, -1] }
       ]
     },
     {
       id: "q13",
-      text: "你对「出人头地」的态度是？",
+      text: "朋友圈都在晒升职加薪，你会？",
       options: [
-        { text: "一定要混出个名堂", effect: [1, 0, 0, 0] },
-        { text: "平平淡淡也挺好", effect: [-1, 0, 0, 0] },
-        { text: "看缘分，不刻意", effect: [0, 0, 0, 0] },
-        { text: "有本事自然会被看见", effect: [1, 0, 0, 0] }
+        { text: "有点焦虑，得加把劲", effect: [1, 0, 0, 0] },
+        { text: "替他们高兴，但不羡慕", effect: [0, 0, 0, 0] },
+        { text: "关我什么事，过好自己", effect: [-1, 0, 0, 0] },
+        { text: "划走，不想被带着跑", effect: [-1, 0, 0, 0] }
       ]
     },
     {
       id: "q14",
-      text: "朋友圈都在晒升职加薪，你会？",
+      text: "约好的朋友临时放你鸽子，你会？",
       options: [
-        { text: "有点焦虑，得加把劲", effect: [1, 0, 0, 0] },
-        { text: "关我什么事，过好自己", effect: [0, 0, 0, 0] },
-        { text: "替他们高兴，但不羡慕", effect: [-1, 0, 0, 0] },
-        { text: "我也要冲一冲", effect: [1, 0, 0, 0] }
+        { text: "直接表达不满", effect: [0, 1, 0, 0] },
+        { text: "心里不爽但不吭声", effect: [0, 0, 0, 0] },
+        { text: "算了，谁还没点事", effect: [0, -1, 0, 0] },
+        { text: "下次还是算了，少期待", effect: [0, -1, 0, 0] }
       ]
     },
     {
       id: "q15",
-      text: "你理想中的「成功」更像？",
-      options: [
-        { text: "做出一番事业被记住", effect: [1, 0, 0, 0] },
-        { text: "活成自己喜欢的样子", effect: [-1, 0, 0, 0] },
-        { text: "财务自由就够", effect: [0, 0, 0, 0] },
-        { text: "在领域里有一席之地", effect: [1, 0, 0, 0] }
-      ]
-    },
-    {
-      id: "q16",
-      text: "约好的朋友临时放你鸽子，你会？",
-      options: [
-        { text: "直接表达不满", effect: [0, 1, 0, 0] },
-        { text: "算了，谁还没点事", effect: [0, 0, 0, 0] },
-        { text: "心里不爽但不吭声", effect: [0, -1, 0, 0] },
-        { text: "下次也让他等等", effect: [0, 1, 0, 0] }
-      ]
-    },
-    {
-      id: "q17",
-      text: "和同事意见完全相反，你会？",
-      options: [
-        { text: "据理力争，坚持己见", effect: [0, 1, 0, 0] },
-        { text: "先听，有道理就退一步", effect: [0, -1, 0, 0] },
-        { text: "不争，和气最重要", effect: [0, 0, 0, 0] },
-        { text: "摆事实说服他", effect: [0, 1, 0, 0] }
-      ]
-    },
-    {
-      id: "q18",
-      text: "遇到特别强势的人，你会？",
-      options: [
-        { text: "硬碰硬，不怂", effect: [0, 1, 0, 0] },
-        { text: "绕着走，别惹麻烦", effect: [0, -1, 0, 0] },
-        { text: "保持距离，礼貌应付", effect: [0, 0, 0, 0] },
-        { text: "该硬的时候寸步不让", effect: [0, 1, 0, 0] }
-      ]
-    },
-    {
-      id: "q19",
-      text: "团队需要你牺牲个人时间，你会？",
-      options: [
-        { text: "义不容辞，集体优先", effect: [0, 0, 1, 0] },
-        { text: "看情况，不想被道德绑架", effect: [0, 0, 0, 0] },
-        { text: "先顾好自己再说", effect: [0, 0, -1, 0] },
-        { text: "该我扛的就扛", effect: [0, 0, 1, 0] }
-      ]
-    },
-    {
-      id: "q20",
       text: "刷到一条令人愤怒的社会新闻，你会？",
       options: [
         { text: "想发声，想做点什么", effect: [0, 0, 1, 0] },
         { text: "生气但很快翻篇", effect: [0, 0, 0, 0] },
         { text: "这世界就这样，管不了", effect: [0, 0, -1, 0] },
-        { text: "持续关注，甚至参与", effect: [0, 0, 1, 0] }
+        { text: "少看这些，保护自己心情", effect: [0, 0, -1, 0] }
       ]
     },
     {
-      id: "q21",
-      text: "你做事更偏向？",
-      options: [
-        { text: "为了更大的意义", effect: [0, 0, 1, 0] },
-        { text: "为了自己开心", effect: [0, 0, -1, 0] },
-        { text: "该做就做，没想那么多", effect: [0, 0, 0, 0] },
-        { text: "为了不辜负信任的人", effect: [0, 0, 1, 0] }
-      ]
-    },
-    {
-      id: "q22",
+      id: "q16",
       text: "发现大家都在默默绕开一条规定，你会？",
       options: [
         { text: "跟着绕，效率优先", effect: [0, 0, 0, 1] },
-        { text: "还是老实按规定来", effect: [0, 0, 0, -1] },
         { text: "看风险，值得就绕", effect: [0, 0, 0, 0] },
-        { text: "主动找更好的办法", effect: [0, 0, 0, 1] }
-      ]
-    },
-    {
-      id: "q23",
-      text: "你的做事风格更像？",
-      options: [
-        { text: "按部就班，稳", effect: [0, 0, 0, -1] },
-        { text: "不按常理出牌", effect: [0, 0, 0, 1] },
-        { text: "有章法，但守底线", effect: [0, 0, 0, 0] },
-        { text: "敢想敢干", effect: [0, 0, 0, 1] }
-      ]
-    },
-    {
-      id: "q24",
-      text: "面对「潜规则」，你会？",
-      options: [
-        { text: "拒绝，走正路", effect: [0, 0, 0, -1] },
-        { text: "看情况，不犯法就行", effect: [0, 0, 0, 0] },
-        { text: "为了成事可以变通", effect: [0, 0, 0, 1] },
-        { text: "我不会去碰这些", effect: [0, 0, 0, -1] }
+        { text: "还是老实按规定来", effect: [0, 0, 0, -1] },
+        { text: "我不会去碰这些擦边的事", effect: [0, 0, 0, -1] }
       ]
     }
   ]

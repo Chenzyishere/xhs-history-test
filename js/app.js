@@ -42,6 +42,62 @@
 
   const canvas = $("share-canvas");
 
+  const PAID = !!DATA.paidMode;
+  const COPY = PAID && DATA.generic ? Object.assign({}, DATA, DATA.generic) : DATA;
+
+  function view(f) {
+    if (!f) return f;
+    if (!PAID) return f;
+    return Object.assign({}, f, {
+      name: f.nameGeneric || f.name,
+      english: f.englishGeneric || f.english,
+      founder: f.founderGeneric || f.founder,
+      animal: f.animalGeneric || f.animal
+    });
+  }
+
+  function track(event) {
+    try {
+      const key = DATA.statsKey || "quiz_stats";
+      const s = JSON.parse(localStorage.getItem(key) || '{"unlock":0,"start":0,"complete":0,"save":0,"copy":0}');
+      if (typeof s[event] === "number") s[event] += 1;
+      s.updated = Date.now();
+      localStorage.setItem(key, JSON.stringify(s));
+      if (event === "complete" && s.start) {
+        console.info("[quiz] 完成率", ((s.complete / s.start) * 100).toFixed(1) + "%", s);
+      }
+      if (event === "save" && s.complete) {
+        console.info("[quiz] 保存率", ((s.save / s.complete) * 100).toFixed(1) + "%", s);
+      }
+    } catch (e) {}
+  }
+
+  function hydrateShell() {
+    const title = COPY.title || DATA.title;
+    document.title = title;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute("content", TOTAL + " 道题，" + (COPY.subtitle || DATA.subtitle) + "。本测试仅供娱乐。");
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", title);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute("content", TOTAL + " 道题，" + (COPY.subtitle || DATA.subtitle));
+
+    const setTxt = (id, val) => { const el = $(id); if (el && val != null && val !== "") el.textContent = val; };
+    const setHtml = (id, val) => { const el = $(id); if (el && val) el.innerHTML = val; };
+
+    setTxt("start-badge", DATA.brand);
+    setHtml("start-title", COPY.titleHtml || DATA.titleHtml);
+    setTxt("start-sub", TOTAL + " 道题 · " + DATA.duration + " · " + (COPY.subtitle || DATA.subtitle));
+    setTxt("start-btn", COPY.startBtn || DATA.startBtn);
+    setHtml("lock-title", COPY.lockTitleHtml || DATA.lockTitleHtml);
+    setTxt("start-foot", COPY.socialProof || DATA.socialProof);
+    setTxt("result-search", "小红书搜索「" + DATA.brand + "」");
+    document.querySelectorAll(".disclaimer").forEach((el) => {
+      el.textContent = DATA.disclaimer || "本测试仅供娱乐，结果不构成性格鉴定";
+    });
+  }
+  hydrateShell();
+
   // ---------- 屏幕切换 ----------
   function show(id) {
     [lockScreen, startScreen, quizScreen, resultScreen].forEach((el) => el.classList.remove("is-active"));
@@ -68,17 +124,16 @@
     return ALPHABET[h % ALPHABET.length];
   }
 
-  // 验证：主密码 或 前缀+6位主体+1位校验
+  // 验证：店铺密码 / 主密码 / 卡密（前缀+6位+校验）
   function isValidCode(input) {
     const cfg = DATA.unlock;
     const raw = normalize(input);
     if (!raw) return false;
 
-    // 主密码
-    if (raw === normalize(cfg.masterCode)) return true;
+    if (cfg.masterCode && raw === normalize(cfg.masterCode)) return true;
+    if (cfg.shopCode && raw === normalize(cfg.shopCode)) return true;
 
-    // 验证码：去掉前缀后应为 7 位（6 位主体 + 1 位校验）
-    const prefix = normalize(cfg.prefix);
+    const prefix = normalize(cfg.prefix || "");
     let body = raw;
     if (prefix && raw.startsWith(prefix)) body = raw.slice(prefix.length);
 
@@ -128,6 +183,7 @@
       unlockError.textContent = "";
       unlockInput.value = "";
       try { localStorage.setItem(UNLOCK_KEY, "1"); } catch (e) {}
+      track("unlock");
       show("start-screen");
     } else {
       unlockError.textContent = "验证码不正确，请检查后重试";
@@ -163,6 +219,7 @@
     current = 0;
     result = null;
     clearProgress();
+    track("start");
     show("quiz-screen");
     renderQuestion();
   });
@@ -245,15 +302,18 @@
     lastScores = scores;
     result = match(scores);
     clearProgress();
+    track("complete");
     renderResult();
     show("result-screen");
   }
 
   // ---------- 渲染结果 ----------
   function renderResult() {
-    const f = result;
+    const f = view(result);
     $("result-name").textContent = f.name;
     $("result-seal").textContent = f.seal;
+    const personaEl = $("result-persona");
+    if (personaEl) personaEl.textContent = f.persona || "";
     $("result-title").textContent = f.title;
     $("result-tagline").textContent = "「" + f.tagline + "」";
     $("result-advice").textContent = f.advice;
@@ -291,7 +351,7 @@
 
     ctx.clearRect(0, 0, W, H);
 
-    // -3..3 归一化到 0..1，0 分落在 0.5（虚线中性环）
+    // 按每维题量归一化到 0..1，0 分落在 0.5（虚线中性环）
     const vals = scores.map((s) => 0.5 + Math.max(-1, Math.min(1, s / PER_DIM)) * 0.5);
     const angles = dims.map((_, i) => -Math.PI / 2 + (i * 2 * Math.PI) / N);
 
@@ -379,7 +439,8 @@
   }
 
   // ---------- 分享卡绘制 ----------
-  function drawShareCard(f) {
+  function drawShareCard(raw) {
+    const f = view(raw);
     const W = 1080, H = 1440;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, W, H);
@@ -401,7 +462,7 @@
     ctx.font = '34px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText("你 灵 魂 深 处 的 历 史 人 格", W / 2, 130);
+    ctx.fillText(COPY.cardKicker || DATA.cardKicker || "你 灵 魂 深 处 的 人 格", W / 2, 130);
 
     // 人物名（居中大字）
     ctx.fillStyle = f.color;
@@ -422,10 +483,12 @@
     ctx.fillText(f.seal, 0, 12);
     ctx.restore();
 
-    // 定调标签
+    // 人格标签 + 定调
     ctx.fillStyle = f.color;
-    ctx.font = 'bold 42px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
-    ctx.fillText("—— " + f.title + " ——", W / 2, 520);
+    ctx.font = 'bold 40px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.fillText(f.persona || f.title, W / 2, 500);
+    ctx.font = 'bold 34px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.fillText("—— " + f.title + " ——", W / 2, 555);
 
     // 金句
     ctx.fillStyle = "#2b2620";
@@ -484,7 +547,7 @@
     ctx.font = '28px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
     ctx.fillText("小红书搜索「" + DATA.brand + "」", W / 2, 1372);
     ctx.font = '24px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
-    ctx.fillText("测一测你是哪位历史人物", W / 2, 1410);
+    ctx.fillText((COPY.cardFooter || DATA.cardFooter || "测一测你是哪种人格") + " · 仅供娱乐", W / 2, 1410);
   }
 
   // 圆角矩形路径
@@ -526,10 +589,13 @@
   }
 
   // ---------- 复制晒单文案 ----------
-  function buildCaption(f) {
-    const tpl = (DATA.share && DATA.share.template) || "{name} {title}";
+  function buildCaption(raw) {
+    const f = view(raw);
+    const share = DATA.share || {};
+    const tpl = (PAID && share.templatePaid) || share.template || "{persona}（{name}） {title}";
     return tpl
       .replace(/\{name\}/g, f.name)
+      .replace(/\{persona\}/g, f.persona || "")
       .replace(/\{title\}/g, f.title)
       .replace(/\{tagline\}/g, f.tagline)
       .replace(/\{advice\}/g, f.advice)
@@ -563,6 +629,7 @@
   $("copy-btn").addEventListener("click", async () => {
     if (!result) return;
     const ok = await copyText(buildCaption(result));
+    if (ok) track("copy");
     toast(ok ? "文案已复制，去小红书粘贴吧" : "复制失败，请长按手动复制");
   });
 
@@ -577,6 +644,7 @@
 
   $("save-btn").addEventListener("click", () => {
     if (!result) return;
+    track("save");
     drawShareCard(result);
     const url = canvas.toDataURL("image/png");
 
@@ -589,7 +657,7 @@
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "我是" + result.name + ".png";
+    a.download = "我是" + view(result).name + ".png";
     document.body.appendChild(a);
     a.click();
     a.remove();

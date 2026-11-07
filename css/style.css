@@ -212,6 +212,14 @@ body {
   letter-spacing: 0.5px;
 }
 
+.disclaimer {
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--ink-soft);
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
 /* =========================================================
  * 做题页
  * ========================================================= */
@@ -351,6 +359,14 @@ body {
   line-height: 1;
 }
 
+.result-persona {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--red-deep);
+  margin: 10px 0 2px;
+}
+
 .result-seal {
   font-family: var(--serif);
   width: 52px;
@@ -438,8 +454,15 @@ body {
   letter-spacing: 1px;
 }
 
+.result-search {
+  margin-top: 18px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--red-deep);
+}
+
 .result-tip {
-  margin-top: 22px;
+  margin-top: 10px;
   font-size: 12px;
   color: var(--ink-soft);
   letter-spacing: 1px;

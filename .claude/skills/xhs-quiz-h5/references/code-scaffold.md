@@ -101,7 +101,7 @@ function finish() {
 
 // 归一化后算欧氏距离，取最近
 function match(scores) {
-  const u = scores.map(s => s / 3);          // -3~3 → -1~1
+  const u = scores.map(s => s / 4);          // -4~4 → -1~1
   let best = null, bestDist = Infinity;
   DATA.figures.forEach(f => {
     const d = f.vector.reduce((sum, v, i) => sum + (v - u[i]) ** 2, 0);
@@ -111,7 +111,7 @@ function match(scores) {
 }
 ```
 
-`/3` 的分母 = 每个维度的题目数。改题量时记得同步改。
+`/4` 的分母 = 每个维度的题目数。改题量时记得同步改。
 
 ---
 
@@ -321,7 +321,7 @@ saveBtn.addEventListener("click", () => {
 function drawRadar(scores, color) {
   const cx = 300, cy = 300, R = 200;
   // -3~3 → 0.5 ~ 1 / 0 ~ 0.5，0 分落在 0.5（虚线中性环）
-  const vals = scores.map(s => 0.5 + Math.max(-1, Math.min(1, s / 3)) * 0.5);
+  const vals = scores.map(s => 0.5 + Math.max(-1, Math.min(1, s / 4)) * 0.5);
   const angles = [0, 1, 2, 3].map(i => -Math.PI / 2 + i * Math.PI / 2);
 
   const pt = (a, ratio) => [cx + Math.cos(a) * R * ratio, cy + Math.sin(a) * R * ratio];
